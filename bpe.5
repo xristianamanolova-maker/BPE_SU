@@ -1,0 +1,546 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+//за 2ра задачя
+struct Product
+{
+    char name[50];
+    double price;
+    int number;
+};
+
+struct Order {
+    char address[100];
+    int productNumber;
+    int done;
+};
+
+//за 6та задача
+int isAnagram(char str1[], char str2[]) {
+    int count[256] = {0};
+
+    if (strlen(str1) != strlen(str2)) {
+        return 0;
+    }
+
+    for (int i = 0; str1[i] != '\0'; i++) {
+        count[str1[i]]++;
+        count[str2[i]]--;
+    }
+
+    for (int i = 0; i < 256; i++) {
+        if (count[i] != 0) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+//7ма задача
+struct Employee
+{
+    int id;
+    double hourlyPay;
+    double hoursWorked;
+    double weeklySalary;
+};
+
+int main() {
+
+    int choice;
+
+    printf("Choose exercise (1-7): ");
+    scanf("%d", &choice);
+
+    switch (choice) 
+    {
+        case 1:
+        {
+            int guests;
+            printf("Enter number of guests: ");
+            scanf("%d", &guests);
+
+            char item[20];
+
+            int tables = 0, chairs = 0, cups = 0, dishes = 0;
+            double total = 0;
+
+            while (1) {
+                scanf("%s", item);
+
+                if (strcmp(item, "PARTY!") == 0)
+                    break;
+
+                if (strcmp(item, "Table") == 0) {
+                    tables++;
+                    total += 42.00;
+                } else if (strcmp(item, "Chair") == 0) {
+                    chairs++;
+                    total += 13.99;
+                } else if (strcmp(item, "Cups") == 0) {
+                    cups++;
+                    total += 5.98;
+                } else if (strcmp(item, "Dishes") == 0) {
+                    dishes++;
+                    total += 21.02;
+                }
+            }
+
+            // нужни количества
+            int neededTables = ceil(guests / 8.0);
+            int neededChairs = guests;
+            int neededCups = ceil(guests / 6.0);
+            int neededDishes = ceil(guests / 6.0);
+
+            // липсващи
+            int missingTables = neededTables - tables;
+            int missingChairs = neededChairs - chairs;
+            int missingCups = neededCups - cups;
+            int missingDishes = neededDishes - dishes;
+
+            printf("%.2f\n", total);
+
+            if (missingTables > 0)
+                printf("%d Table\n", missingTables);
+
+            if (missingChairs > 0)
+                printf("%d Chairs\n", missingChairs);
+
+            if (missingCups > 0)
+                printf("%d Cups\n", missingCups);
+
+            if (missingDishes > 0)
+                printf("%d Dishes\n", missingDishes);
+                
+            break;
+        }
+
+        case 2:
+        {
+            struct Product products[100];
+            struct Order orders[100];
+
+            int productCount = 0;
+            int orderCount = 0;
+
+            char command[20];
+
+            printf("Enter commands (Product / Order / END):\n");
+
+            scanf("%s", command);
+
+            while (strcmp(command, "END") != 0)
+            {
+                if (strcmp(command, "Product") == 0)
+                {
+                    printf("Enter product name, price, number:\n");
+
+                    scanf("%s", products[productCount].name);
+                    scanf("%lf", &products[productCount].price);
+                    scanf("%d", &products[productCount].number);
+
+                    for (int i = 0; i < orderCount; i++)
+                    {
+                        if (orders[i].done == 0 &&
+                            orders[i].productNumber == products[productCount].number)
+                        {
+                            printf("Client %s ordered %s\n",
+                                orders[i].address,
+                                products[productCount].name);
+
+                            orders[i].done = 1;
+                        }
+                    }
+
+                    productCount++;
+                }
+                else if (strcmp(command, "Order") == 0)
+                {
+                    struct Order newOrder;
+                    int found = 0;
+
+                    printf("Enter address and product number:\n");
+
+                    scanf("%s", newOrder.address);
+                    scanf("%d", &newOrder.productNumber);
+                    newOrder.done = 0;
+
+                    for (int i = 0; i < productCount; i++)
+                    {
+                        if (products[i].number == newOrder.productNumber)
+                        {
+                            printf("Client %s ordered %s\n",
+                                newOrder.address,
+                                products[i].name);
+
+                            found = 1;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        orders[orderCount] = newOrder;
+                        orderCount++;
+                        printf("Order saved (waiting for product)\n");
+                    }
+                }
+
+                printf("\nNext command:\n");
+                scanf("%s", command);
+            }
+
+            printf("Program ended.\n");
+        
+            break;
+        }
+
+        case 3:
+        {
+            char word[51];
+            char **arr = NULL;
+            int count = 0;
+            char neededChar;
+            int first = 1;
+
+            FILE *out;
+
+            printf("Enter words (write END to stop):\n");
+
+            while (scanf("%50s", word) == 1) {
+                if (strcmp(word, "END") == 0) {
+                    break;
+                }
+
+                if (first) {
+                    arr = realloc(arr, (count + 1) * sizeof(char *));
+                    arr[count] = malloc(strlen(word) + 1);
+                    strcpy(arr[count], word);
+                    count++;
+
+                    neededChar = word[strlen(word) - 1];
+                    first = 0;
+                } else {
+                    if (word[0] == neededChar) {
+                        arr = realloc(arr, (count + 1) * sizeof(char *));
+                        arr[count] = malloc(strlen(word) + 1);
+                        strcpy(arr[count], word);
+                        count++;
+
+                        neededChar = word[strlen(word) - 1];
+                    }
+                }
+            }
+
+            out = fopen("output.bin", "wb");
+            if (out == NULL) {
+                printf("Cannot create binary file.\n");
+                return 1;
+            }
+
+            for (int i = 0; i < count; i++) {
+                fwrite(arr[i], sizeof(char), strlen(arr[i]), out);
+
+                if (i < count - 1) {
+                    char space = ' ';
+                    fwrite(&space, sizeof(char), 1, out);
+                }
+            }
+
+            fclose(out);
+
+            out = fopen("output.bin", "rb");
+            if (out == NULL) {
+                printf("Cannot open binary file.\n");
+                return 1;
+            }
+
+            printf("Binary file content:\n");
+
+            char ch;
+            while (fread(&ch, sizeof(char), 1, out) == 1) {
+                printf("%c", ch);
+            }
+
+            printf("\n");
+
+            fclose(out);
+
+            for (int i = 0; i < count; i++) {
+                free(arr[i]);
+            }
+            free(arr);
+
+            break;
+        }
+
+        case 4:
+        {
+            char inputFileName[100];
+            char outputFileName[100];
+            int key;
+            FILE *in, *out;
+            char ch;
+
+            printf("Enter input file name: ");
+            scanf("%99s", inputFileName);
+
+            printf("Enter output file name: ");
+            scanf("%99s", outputFileName);
+
+            printf("Enter key (2 to 10): ");
+            scanf("%d", &key);
+
+            if (key < 2 || key > 10) {
+                printf("Invalid key.\n");
+                return 1;
+            }
+
+            in = fopen(inputFileName, "r");
+            if (in == NULL) {
+                printf("Cannot open input file.\n");
+                return 1;
+            }
+
+            out = fopen(outputFileName, "w");
+            if (out == NULL) {
+                printf("Cannot create output file.\n");
+                fclose(in);
+                return 1;
+            }
+
+            while ((ch = fgetc(in)) != EOF) {
+                ch = ch + key;
+                fputc(ch, out);
+            }
+
+            fclose(in);
+            fclose(out);
+
+            printf("File encoded successfully.\n");
+
+            break;
+        }
+
+        case 5:
+        {
+            char word[100];
+            char guessed[100];
+            char letter;
+            int length, count = 0;
+            int guessedCount = 0;
+
+            printf("Enter the secret word: ");
+            scanf("%s", word);
+
+            length = strlen(word);
+
+            for (int i = 0; i < length; i++) {
+                guessed[i] = '_';
+            }
+            guessed[length] = '\0';
+
+            printf("Word: %s\n", guessed);
+
+            while (strcmp(word, guessed) != 0) {
+                printf("Enter a letter: ");
+                scanf(" %c", &letter);
+
+                count++;
+
+                for (int i = 0; i < length; i++) {
+                    if (word[i] == letter) {
+                        guessed[i] = letter;
+                    }
+                }
+
+                printf("Word: %s\n", guessed);
+            }
+
+            printf("You guessed the word!\n");
+            printf("Entered letters: %d\n", count);
+
+            if (count <= length + 2) {
+                printf("You win!\n");
+            } else {
+                printf("You lose!\n");
+            }
+
+            break;
+        }
+
+        case 6:
+        {
+            char a[100], b[100];
+
+            printf("Enter first word: ");
+            scanf("%s", a);
+
+            printf("Enter second word: ");
+            scanf("%s", b);
+
+            if (isAnagram(a, b)) {
+                printf("Anagram!\n");
+            } else {
+                printf("Not anagram!\n");
+            }
+        
+            break;
+        }
+
+        case 7:
+        {
+            struct Employee emp;
+            FILE *file;
+            char fileName[100] = "employees.dat";
+            char mode;
+            int n, count = 0;
+
+            printf("Enter mode:\n");
+            printf("n - new file\n");
+            printf("a - append records\n");
+            printf("p - print salaries\n");
+            scanf(" %c", &mode);
+
+            if (mode == 'n')
+            {
+                file = fopen(fileName, "wb");
+                if (file == NULL)
+                {
+                    printf("Cannot open file.\n");
+                    break;
+                }
+
+                printf("How many employees (max 30): ");
+                scanf("%d", &n);
+
+                if (n < 1 || n > 30)
+                {
+                    printf("Invalid number.\n");
+                    fclose(file);
+                    break;
+                }
+
+                for (int i = 0; i < n; i++)
+                {
+                    printf("\nEmployee %d\n", i + 1);
+                    printf("ID: ");
+                    scanf("%d", &emp.id);
+                    printf("Hourly pay: ");
+                    scanf("%lf", &emp.hourlyPay);
+                    printf("Hours worked: ");
+                    scanf("%lf", &emp.hoursWorked);
+
+                    double gross;
+                    if (emp.hoursWorked <= 40)
+                    {
+                        gross = emp.hoursWorked * emp.hourlyPay;
+                    }
+                    else
+                    {
+                        gross = 40 * emp.hourlyPay +
+                                (emp.hoursWorked - 40) * emp.hourlyPay * 1.5;
+                    }
+
+                    emp.weeklySalary = gross - gross * 0.0365;
+
+                    fwrite(&emp, sizeof(struct Employee), 1, file);
+                }
+
+                fclose(file);
+                printf("File created successfully.\n");
+            }
+            else if (mode == 'a')
+            {
+                file = fopen(fileName, "rb");
+                if (file != NULL)
+                {
+                    while (fread(&emp, sizeof(struct Employee), 1, file) == 1)
+                    {
+                        count++;
+                    }
+                    fclose(file);
+                }
+
+                if (count >= 30)
+                {
+                    printf("File already has 30 employees.\n");
+                    break;
+                }
+
+                file = fopen(fileName, "ab");
+                if (file == NULL)
+                {
+                    printf("Cannot open file.\n");
+                    break;
+                }
+
+                printf("How many employees to add (max %d): ", 30 - count);
+                scanf("%d", &n);
+
+                if (n < 1 || n > (30 - count))
+                {
+                    printf("Invalid number.\n");
+                    fclose(file);
+                    break;
+                }
+
+                for (int i = 0; i < n; i++)
+                {
+                    printf("\nEmployee %d\n", count + i + 1);
+                    printf("ID: ");
+                    scanf("%d", &emp.id);
+                    printf("Hourly pay: ");
+                    scanf("%lf", &emp.hourlyPay);
+                    printf("Hours worked: ");
+                    scanf("%lf", &emp.hoursWorked);
+
+                    double gross;
+                    if (emp.hoursWorked <= 40)
+                    {
+                        gross = emp.hoursWorked * emp.hourlyPay;
+                    }
+                    else
+                    {
+                        gross = 40 * emp.hourlyPay +
+                                (emp.hoursWorked - 40) * emp.hourlyPay * 1.5;
+                    }
+
+                    emp.weeklySalary = gross - gross * 0.0365;
+
+                    fwrite(&emp, sizeof(struct Employee), 1, file);
+                }
+
+                fclose(file);
+                printf("Records added successfully.\n");
+            }
+            else if (mode == 'p')
+            {
+                file = fopen(fileName, "rb");
+                if (file == NULL)
+                {
+                    printf("Cannot open file.\n");
+                    break;
+                }
+
+                printf("\nEmployees salaries:\n");
+                while (fread(&emp, sizeof(struct Employee), 1, file) == 1)
+                {
+                    printf("ID: %d | Hourly pay: %.2lf | Hours: %.2lf | Weekly salary: %.2lf\n",
+                           emp.id, emp.hourlyPay, emp.hoursWorked, emp.weeklySalary);
+                }
+
+                fclose(file);
+            }
+            else
+            {
+                printf("Invalid mode.\n");
+            }
+            
+            break;
+        }
+    }
+}
